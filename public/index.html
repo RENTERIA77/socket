@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+
+    <link rel="stylesheet" href="/css/chat.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"
+    />
+  </head>
+  <body>
+    <div class="chat-wrap">
+      <div class="header">
+        <div class="detalles">
+          <span id="nombre-to-name">Cliente - Servidor</span>
+        </div>
+      </div>
+
+      <div class="chat-box" id="chat-box"></div>
+
+      <div class="text-area">
+        <button type="button" id="btn-archive">
+          <i class="bi bi-paperclip"></i>
+        </button>
+        <input type="text" class="mensaje" id="message-area" placeholder="Aa" />
+        <button type="button" class="btn-stycker">
+          <i class="bi bi-emoji-smile"></i>
+        </button>
+        <button type="button" id="send-message">
+          <i class="bi bi-send"></i>
+        </button>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      const btnSend = document.getElementById("send-message");
+      const message = document.getElementById("message-area");
+      const boxMessages = document.getElementById("chat-box");
+
+      btnSend.addEventListener("click", () => {
+        if (message.value == "") {
+          message.focus();
+        } else {
+          boxMessages.innerHTML += `
+            <!-- MI MENSAJE -->
+        <div class="chat from-message">
+          <div class="detalles">
+            <p>${message.value}</p>
+          </div>
+        </div>
+            `;
+          scrollBottom();
+          socket.emit("message", { msg: message.value });
+          message.value = null;
+
+          
+        }
+      });
+      /* ENTER KEY  */
+      function enterkey() {
+        keyenter = event.keyCode;
+        if (keyenter == 13) {
+          btnSend.click();
+          scrollBottom();
+        }
+      }
+      window.onkeydown = enterkey;
+
+      function scrollBottom() {
+        boxMessages.scrollTop = boxMessages.scrollHeight;
+      }
+
+      /* LISTENER SOCKET */
+      socket.on("message", (data) => {
+        boxMessages.innerHTML += `
+        <!-- MENSAJE AMIGO -->
+        <div class="chat to-message">
+          <div class="detalles">
+            <p>${data.msg}</p>
+          </div>
+        </div>
+        `;
+        scrollBottom()
+      });
+    </script>
+  </body>
+</html>
